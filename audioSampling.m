@@ -70,31 +70,22 @@ conv = conv(training, newSignal);
 
 %% Matched Signal Implementation
 
-signal = newSignal(:,1);
-signal = signal/max(abs(signal)); %% normalize
-fsignal = fft(signal);
+rawSignal = newSignal(:,1);
+inputSignal = normalizeSignal(rawSignal);  %% normalize
 
+% audioBank{1} = Cat;
+% audioBank{2} = Dog;
+% audioBank{3} = Mouse;
+% audioBank{4} = Horse;
+audioBank = [Cat Dog Mouse Horse];
+audioName = {'Cat' 'Dog' 'Mouse' 'Horse'};
 
-filter = [ Cat Dog Mouse Horse];
-
-
-% filter{1} = Cat;
-% filter{2} = Dog;
-% filter{3} = Mouse;
-% filter{4} = Horse;
-result = [0 0 0 0];
 for i=1:4
-        comp = filter(:,i);
-        comp = comp/max(abs(comp)); %% normalize
-        fcomp = fft(comp);
-        
-        result(i) = max(abs(cconv(fsignal, fcomp(end:-1:1))));
+        comp = audioBank(:,i);
+        audioBank(:,i) = normalizeSignal(comp); %% normalize
 end
 
-disp('The result of filter is...');
-result
-
-
+matchedSignal = filterSignal(inputSignal, audioBank, audioName);
 
 
 %%
