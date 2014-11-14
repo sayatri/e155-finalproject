@@ -1,0 +1,41 @@
+
+
+%  load('preRecAudio.mat');
+
+ 
+audioMat = [Cat Close Dog Horse]; % Mouse Off On Open Pause Start Stop];
+audioNam = ['Cat' 'Close' 'Dog' 'Horse']; % 'Mouse' 'Off' 'On' 'Open'...
+            %    'Pause' 'Start' 'Stop'];
+            
+
+[length, numRec] = size(audioMat);
+
+distMat = zeros(numRec);
+distMat = distMat(:,1)
+
+
+% initial
+i = 2;  
+finalIndex = 1;
+
+preRecSignal = audioMat(:,1);
+disp('Begin processing data...');
+
+distMat(1) = dtw(Dog, preRecSignal(54000:80000), 100);
+
+%%
+while i < numRec
+    preRecSignal = audioMat(:,i);
+    distMat(i) = dtw(Dog, preRecSignal, 100);
+    
+    if distMat(i) < distMat(i-1)
+        finalIndex = i;
+    end
+    
+    i = i + 1;
+end
+
+time = toc;
+
+fprintf('The final matching audio is %s', audioName(finalIndex));
+fprintf('It took this long %f', time);
