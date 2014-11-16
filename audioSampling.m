@@ -1,7 +1,7 @@
 %% Training
 
 %% Cat
-recCat = audiorecorder(96000, 24, 1);
+recCat = audiorecorder(5000, 8, 1);
 disp('Say Cat.')
 recordblocking(recCat, 2);
 disp('End of Recording.');
@@ -13,7 +13,7 @@ play(recCat);
 Cat = getaudiodata(recCat);
 
 %% Dog
-recDog = audiorecorder(96000, 24, 1);
+recDog = audiorecorder(5000, 8, 1);
 disp('Say Dog.')
 recordblocking(recDog, 2);
 disp('End of Recording.');
@@ -25,19 +25,19 @@ play(recDog);
 Dog = getaudiodata(recDog);
 
 %% Mouse
-recMouse = audiorecorder(96000, 24, 1);
-disp('Say Mouse.')
-recordblocking(recMouse, 2);
+recOff = audiorecorder(5000, 8, 1);
+disp('Say Off.')
+recordblocking(recOff, 2);
 disp('End of Recording.');
 
 % Play back the recording.
-play(recMouse);
+play(recOff);
 
 % Store data in double-precision array.
-Mouse = getaudiodata(recMouse);
+Off = getaudiodata(recOff);
 
 %% Horse
-recHorse = audiorecorder(96000, 24, 1);
+recHorse = audiorecorder(5000, 8, 1);
 disp('Say Horse.')
 recordblocking(recHorse, 2);
 disp('End of Recording.');

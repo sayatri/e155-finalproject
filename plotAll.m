@@ -1,5 +1,5 @@
-function plotAllAudio( allSignals, allSignalNames )
-% Takes in a matrix of audio samples and plot them
+function plotAll( allSignals, allSignalNames )
+% Takes in a matrix of audio samples and plots them
 %   all in one window
 
 len = length(allSignals(1,:)); % get number of audio samples
