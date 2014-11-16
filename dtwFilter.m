@@ -1,4 +1,4 @@
-function [ matchedSignal ] = filterTemplate( inputAudio, allSignals, allSignalNames )
+function [ matchedSignal ] = dtwFilter( concatTestSignal, concatSignals, allSignalNames )
 % Description of Matching Algorithm:
 % 
 % 
@@ -13,7 +13,34 @@ disp('Begin processing data...');
 tic;
 
 
-% Displays the results on the screen
+len = length(concatSignals(1,:));
+
+
+% initialize values 
+finalIndex = 1;
+
+% Analyze first signal
+preRec = concatSignals(:,1);
+minDist = dtw(concatTestSignal, preRec, 20);
+
+% loop through all the the other signals and compare to previous analysis
+for i = 2:len
+    preRec = concatSignals(:,i);
+    newDist = dtw(concatTestSignal, preRec, 20);
+    
+    if newDist < minDist
+        minDist = newDist;
+        finalIndex = i;
+    end
+    i = i + 1;
+end
+
+
+
+matchedSignal = concatSignals(:,finalIndex);
+
+
+time = toc;
 fprintf('\nYou said "%s"\n', allSignalNames{finalIndex});
 fprintf('It took %f seconds to calculate\n\n', time);
 

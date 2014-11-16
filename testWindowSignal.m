@@ -4,7 +4,7 @@ figure
 plotAll(allSignals, allSignalNames);
 suptitle('Signals Before Windowing');
 
-newSignals = windowSignal(allSignals, allSignalNames);
+newSignals = windowSignal(allSignals);
 
 figure
 plotAll(newSignals, allSignalNames);
