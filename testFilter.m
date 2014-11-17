@@ -20,8 +20,13 @@ testSignal = newSignal;
 
 
 % concatenate the signals
-concatSignal = windowSignal(allSignals);
-concatTestSignal = windowSignal(testSignal);
+normSignal = normalizeSignal(allSignals);
+normTestSignal = normalizeSignal(testSignal);
 
-disp('Begin processing data...');
-dtwFilter(concatTestSignal, concatSignal, allSignalNames);
+disp('Begin processing data with the DTW Filter...');
+
+dtwFilter(normTestSignal, normSignal, allSignalNames);
+disp(' ');
+disp('Begin processing data with the xcorr Filter...');
+
+xcorrFilter(normTestSignal, normSignal, allSignalNames);

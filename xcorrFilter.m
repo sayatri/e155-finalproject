@@ -1,4 +1,5 @@
-%function [ matchedSignal ] = xcorrFilter( concatTestAudio, concatSignals, allSignalNames )
+function [ matchedSignal, second, third ] = ...
+    xcorrFilter( normTestAudio, normSignals, allSignalNames )
 
 % Description of Matching Algorithm:
 % 
@@ -12,39 +13,83 @@
 %                    pre-recorded audio
 % output matchedSignal - the string of the word that is matched
 
-concatTestAudio = windowSignal(Dog);
-concatSignals = windowSignal(allSignals);
+% close all
+% normTestAudio = normalizeSignal(Off);
+% normSignals = normalizeSignal(allSignals);
 
-disp('Begin processing data...');
 tic;
 
-len = length(concatSignals(1,:));
+len = length(normSignals(1,:));
 
-% setting up extended signals
-matZero = zeros(len,5000);
-extTestAudio = zeros(5000,1);
-extSignals = zeros(5000, len);
+maxValue = 0;
+secondVal = 0;
+thirdVal = 0;
 
-extTestAudio(1:2000) = concatTestAudio';
-extSignals(1:2000,:) = concatSignals;
+finalIndex = 1;
+secondInd = 1;
+thirdInd = 1;
 
-fftTest = fft(extTestAudio);
+fftxCorr = zeros(3999,11);
 
 for i = 1:len
-     fftCurrent = fft(extSignals(:,i));
-     fftCurrent = fliplr(fftCurrent);
-     fftxCorr = fftTest.*fftCurrent;
-     xCorr(:,i) = ifft(fftxCorr);
+     currXCorr = xcorr_fft(normTestAudio', normSignals(:,i)')';
+     currentMax = max(abs(currXCorr));
+     
+     if currentMax > maxValue
+         thirdVal = secondVal;
+         secondVal = maxValue;
+         maxValue = currentMax;
+        
+        thirdInd = secondInd;
+        secondInd = finalIndex;
+        finalIndex = i;
+     end
+     
+     fftxCorr(:,i) = currXCorr;
+         
+     matlabxCorr(:,i) = xcorr(normTestAudio, normSignals(:,i));
 end
 
-plotAll(xCorr, allSignalNames)
-suptitle('Result of X-Correlation');
-    
+% figure
+% plotAll(matlabxCorr, allSignalNames)
+% suptitle('Result of Matlab xcorr Function');
 
-% Displays the results on the screen
-%fprintf('\nYou said "%s"\n', allSignalNames{finalIndex});
+figure
+plotAll(fftxCorr, allSignalNames)
+suptitle('Result of fft xcorr Function');
+
+% figure
+% autocorr = xcorr(normTestAudio);
+% plot(autocorr);
+% title('Result of AutoCorrelation from Matlab Function');
+% 
+% figure
+% autocorr = xcorr_fft(normTestAudio', normTestAudio');
+% plot(autocorr);
+% title('Result of AutoCorrelation from FFT Function');
+
+
+
+
+time = toc;
+
+%Displays the results on the screen
+fprintf('\nYou said "%s"\n', allSignalNames{finalIndex});
+fprintf('It took %f seconds to calculate\n\n', time);
+
+matchedSignal = normSignals(:,finalIndex);
+second = normSignals(:,secondInd);
+third = normSignals(:,thirdInd);
+
+time = toc;
+fprintf('\nYou said "%s", with a distance of %f\n',...
+    allSignalNames{finalIndex}, maxValue);
+fprintf('The second closest match was "%s", with a distance of %f\n',...
+    allSignalNames{secondInd}, secondVal);
+fprintf('The third closest match was "%s", with a distance of %f\n',...
+    allSignalNames{thirdInd}, thirdVal);
 fprintf('It took %f seconds to calculate\n\n', time);
 
 
-%end
+end
 
