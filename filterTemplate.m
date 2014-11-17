@@ -9,7 +9,11 @@ function [ matchedSignal ] = filterTemplate( inputAudio, allSignals, allSignalNa
 % input audioName  - an array of string correlating to the word of the
 %                    pre-recorded audio
 % output matchedSignal - the string of the word that is matched
-disp('Begin processing data...');
+
+
+% RUN THIS CODE BEFORE CALLING THE FUNCTION
+% disp('Begin processing data...');
+
 tic;
 
 

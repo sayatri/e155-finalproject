@@ -2,10 +2,10 @@
 close all
 figure
 plotAll(allSignals, allSignalNames);
-suptitle('Signals Before Windowing');
+suptitle('Signals Before Normalizing');
 
-newSignals = windowSignal(allSignals);
+newSignals = normalizeSignal(allSignals);
 
 figure
 plotAll(newSignals, allSignalNames);
-suptitle('Signals After Windowing');
+suptitle('Signals After Normalizing');

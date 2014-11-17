@@ -18,9 +18,10 @@ newSignal = getaudiodata(recSignal);
 
 testSignal = newSignal;
 
-%%
+
 % concatenate the signals
 concatSignal = windowSignal(allSignals);
 concatTestSignal = windowSignal(testSignal);
 
+disp('Begin processing data...');
 dtwFilter(concatTestSignal, concatSignal, allSignalNames);

@@ -1,4 +1,4 @@
-function [ matchedSignal ] = dtwFilter( concatTestSignal, concatSignals, allSignalNames )
+function [ matchedSignal, second, third ] = dtwFilter( testSignal, allSignals, allSignalNames )
 % Description of Matching Algorithm:
 % 
 % 
@@ -9,27 +9,35 @@ function [ matchedSignal ] = dtwFilter( concatTestSignal, concatSignals, allSign
 % input audioName  - an array of string correlating to the word of the
 %                    pre-recorded audio
 % output matchedSignal - the string of the word that is matched
-disp('Begin processing data...');
 tic;
 
 
-len = length(concatSignals(1,:));
+len = length(allSignals(1,:));
 
 
 % initialize values 
 finalIndex = 1;
+secondInd = finalIndex;
+thirdInd = secondInd;
 
 % Analyze first signal
-preRec = concatSignals(:,1);
-minDist = dtw(concatTestSignal, preRec, 20);
+preRec = allSignals(:,1);
+minDist = dtw(testSignal, preRec, 20);
+secondDist = minDist;
+thirdDist = secondDist;
 
 % loop through all the the other signals and compare to previous analysis
 for i = 2:len
-    preRec = concatSignals(:,i);
-    newDist = dtw(concatTestSignal, preRec, 20);
+    preRec = allSignals(:,i);
+    newDist = dtw(testSignal, preRec, 20);
     
     if newDist < minDist
+        thirdDist = secondDist;
+        secondDist = minDist;
         minDist = newDist;
+        
+        thirdInd = secondInd;
+        secondInd = finalIndex;
         finalIndex = i;
     end
     i = i + 1;
@@ -37,11 +45,17 @@ end
 
 
 
-matchedSignal = concatSignals(:,finalIndex);
-
+matchedSignal = allSignals(:,finalIndex);
+second = allSignals(:,secondInd);
+third = allSignals(:,thirdInd);
 
 time = toc;
-fprintf('\nYou said "%s"\n', allSignalNames{finalIndex});
+fprintf('\nYou said "%s", with a distance of %f\n',...
+    allSignalNames{finalIndex}, minDist);
+fprintf('The second closest match was "%s", with a distance of %f\n',...
+    allSignalNames{secondInd}, secondDist);
+fprintf('The third closest match was "%s", with a distance of %f\n',...
+    allSignalNames{thirdInd}, thirdDist);
 fprintf('It took %f seconds to calculate\n\n', time);
 
 
