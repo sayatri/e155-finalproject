@@ -25,16 +25,16 @@ play(recDog);
 Dog = getaudiodata(recDog);
 
 %% Mouse
-recOff = audiorecorder(5000, 8, 1);
+recMouse = audiorecorder(5000, 8, 1);
 disp('Say Off.')
-recordblocking(recOff, 2);
+recordblocking(recMouse, 2);
 disp('End of Recording.');
 
 % Play back the recording.
-play(recOff);
+play(recMouse);
 
 % Store data in double-precision array.
-Off = getaudiodata(recOff);
+Off = getaudiodata(recMouse);
 
 %% Horse
 recHorse = audiorecorder(5000, 8, 1);
@@ -51,7 +51,7 @@ Horse = getaudiodata(recHorse);
 
 %% New Signal
 
-recSignal = audiorecorder(96000, 24, 1);
+recSignal = audiorecorder(5000, 8, 1);
 disp('Start speaking to test the system.')
 recordblocking(recSignal, 2);
 disp('End of Recording.');
@@ -63,14 +63,10 @@ play(recSignal);
 newSignal = getaudiodata(recSignal);
 
 
-%% Convolution
-
-conv = conv(training, newSignal);
-
-
 %% Matched Signal Implementation
 
 rawSignal = newSignal(:,1);
+disp('normalizing input signal');
 inputSignal = normalizeSignal(rawSignal);  %% normalize
 
 % audioBank{1} = Cat;
@@ -80,36 +76,18 @@ inputSignal = normalizeSignal(rawSignal);  %% normalize
 audioBank = [Cat Dog Mouse Horse];
 audioName = {'Cat' 'Dog' 'Mouse' 'Horse'};
 
-for i=1:4
-        comp = audioBank(:,i);
-        audioBank(:,i) = normalizeSignal(comp); %% normalize
-end
+disp('normalizing signal');
+normBank = normalizeSignal(audioBank);
 
-matchedSignal = filterSignal(inputSignal, audioBank, audioName);
+disp('looking for match');
+matchedSignal = dtwFilter(inputSignal, normBank, audioName);
 
 
 %%
 
 % Plot the waveform.
-subplot(5,1,1);
-plot(Cat);
-title('Cat');
-
-subplot(5,1,2);
-plot(Dog);
-title('Dog');
-
-subplot(5,1,3);
-plot(Mouse);
-title('Mouse');
-
-subplot(5,1,4);
-plot(Horse);
-title('Horse');
-
-subplot(5,1,5);
-plot(newSignal);
-title('newSignal');
+%signals = [audioBank
+plot(audioBank, audioName);
 
 %%
 spectrogram(Cat)
