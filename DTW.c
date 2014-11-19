@@ -1,10 +1,10 @@
-/*  DWT.c
+/*  DTW.c
     Receives an audio signal from the master PIC
     Performs dynamic time warping to find similarity to signals in bank
     Sends string corresponding to signal of closest-matched signal
 */
 
-#include <P32xxxx.h>
+//#include <P32xxxx.h>
 
 void initspi(void) {
     char junk;
@@ -54,7 +54,7 @@ int main(void) {
         char bankSignalA;
         char bankSignalB;
 
-        while (SPI2SS3 != 0);    // Wait for the master to be ready
+        while (PORTBbits.RB4 != 0);    // Wait for the master to be ready
 
         // // Once receiving begins, receive the entire audio file and the two
         // //    chars representing which files in the bank had the highest scores
@@ -75,7 +75,7 @@ int main(void) {
         // Set the flag to indicate to the master that PIC is ready to transmit
         PORTBbits.RB3 = 1;
 
-        while (SPI2SS3 != 0);    // Wait for the master to pay attention
+        while (PORTBbits.RB4 != 0);    // Wait for the master to pay attention
         spisendbyte(result);     // Then transmit the result
 
         // // Receive the data

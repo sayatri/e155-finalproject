@@ -80,7 +80,7 @@ disp('normalizing signal');
 normBank = normalizeSignal(audioBank);
 
 disp('looking for match');
-matchedSignal = dtwFilter(inputSignal, normBank, audioName);
+matchedSignal = corrFilterS(inputSignal, normBank, audioName);
 
 
 %%
