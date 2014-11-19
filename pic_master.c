@@ -16,11 +16,6 @@ SPI PIC Master Configuration
 #include <string.h>
 #include <stdio.h>
 #include "GenericTypeDefs.h"
-#include "HardwareProfile.h"
-#include "usb_config.h"
-#include "USB\usb.h"
-#include "USB\usb_host_hid_parser.h"
-#include "USB\usb_host_hid.h"
 #include <plib.h>
 #include <p32xxxx.h>
 
@@ -79,8 +74,7 @@ void initspi(void) {
 
     IEC0CLR=0x03800000; // disable all interrupts
     SPI2CONbits.ON = 0; // disable SPI to reset any previous state
-    junk = SPI2BUF; // read SPI buffer to clear the receive buffer
-    SPI2SPIROV = 0; // clear the receive overflow flag
+    junk = SPI2BUF; // read SPI buffer to clear the receive  SPI2SPIROV = 0; // clear the receive overflow flag
     SPI2BRG = 7; //set BAUD rate to 1.25MHz, with Pclk at 20MHz 
     SPI2CONbits.MSTEN = 1; // enable master mode
     SPI2CONbits.SMP = 1; // input data sampled at end of data output time
@@ -91,7 +85,7 @@ void initspi(void) {
 }
 
 
-int spi_send_receive(signed char send) {
+char spi_send_receive(signed char send) {
     SPI2BUF = send; // send data to slave
     while (!SPI2STATbits.SPIBUSY); // wait until received buffer fills, indicating data received 
     return SPI2BUF; // return received data and clear the read buffer full
@@ -166,7 +160,7 @@ void initUART(void)
 int main (void)
 {
         
-        int receivedSPI;
+        char receivedSPI;
         
         initspi();
         initUART();
@@ -179,17 +173,17 @@ int main (void)
         //   RD[11:8] are switches
         TRISD = 0xFF00;
 
-        // set RE[0] to input - for pushbuttom1
-        // set RE[3:1] to input - for slave select
-        TRISE = 0x000F; 
+        // set RE[0] to output - for pushbuttom1
+        // set RE[3:1] to output - for slave select
+        TRISE = 0x0000; 
 
 
 
         
         while(1) {
-
+            printf("I am configured via UART correctly!\n");
             switches = PORTD;
-            PORTD = (PORTD >> 8) & 0xF; // Read and mask RD[7:4]
+            PORTD = (PORTD >> 8) & 0x000F; // Read and mask RD[7:4]
                                         // display on LED
 
             // switch(Master_State)
@@ -212,10 +206,10 @@ int main (void)
             //         break;
 
             // }
-  
-
-             receivedSPI = spi_send_receive(switches);
-             printf("I received %c from Sarah!", received SPI);
+             
+            PORTE = SARAH_FGPA;
+            receivedSPI = spi_send_receive(switches);
+            printf("I received %c from Sarah!\n", receivedSPI);
         }
 
 }
