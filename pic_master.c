@@ -1,9 +1,15 @@
 
 /*
 
+PIC Master Configuration
 Amy Ngai
-SPI PIC Master Configuration
+mngai@hmc.edu
 
+This code:
+-   Configures the ADC to receive audio from 
+-   Configures the SPI Master to transmit data to 3 different
+    SPI slaves (another PIC and two FPGAs)
+-
 
 */
 
@@ -53,6 +59,25 @@ typedef enum _STATE
 #define SLAVE_PIC_ON        (0x0002) // SS = RD1
 #define AMY_FPGA            (0x0004) // SS = RD2
 #define SARAH_FGPA          (0x0008) // SS = RD3
+
+// Macros for ADC Configuration
+
+#define CONFIG1             (ADC_MODULE_OFF |   // Turns module off
+                            ADC_IDLE_CONTINUE | // module continues in Idle Mode
+                            ACD_FORMAT_INT16 |  // Data output integer 16-bit
+                            ADC_CLK_MANUAL |    // Clearing SAMP bit ends sampling and starts conversion
+                            ADC_AUTO_SAMPLING_ON |// Begins when SAMP bit is set
+                            ADC_SAMP_OFF)       // ADC sample hold
+#define CONFIG2             (ADC_SCAN_OFF |     // Scan select off
+                            ADC_ALT_BUF_ON)     // Buffer configured as two 8-word buffers?????
+#define CONFIG3             (ACD)CONV_CLK_SYSTEM)// Use PBCLK
+#define CONFIGPORT          (ENABLE_AN0_ANA)    // AN0 in analog input pin mode in Analog mode
+#define CONFIGSCAN          (SCAN_SCAN_AN0)     // Select AN0 for input scan
+#define CHANNELCONFIG       (ADC_CH0_POS_SAMPLEA_AN0 | // Use AN0 for input
+                            ADC_CH0_NEG_SAMPLEA_NVREF) /// Use ground as neg ref for AN0
+//#define TWOSEC              (0x?????) // TODO
+)
+                                                
 
 
 // *****************************************************************************
@@ -151,6 +176,19 @@ void initUART(void)
 }
 
 
+// *****************************************************************************
+// *****************************************************************************
+// Init Timer
+// *****************************************************************************
+// *****************************************************************************
+
+// Configure Timer Type B
+void initTMR2(void){
+    T1CONbits.ON = 1; // turn timer on
+    T1CONbits.TCKPS = 7; // prescale value is 256
+    T1CONbits.TCS = 0; // Use internal peripheral clock
+}
+
 //******************************************************************************
 //******************************************************************************
 // Main
@@ -160,13 +198,27 @@ void initUART(void)
 int main (void)
 {
         
-        char receivedSPI;
+        unsigned char receivedSPI;
+        unsigned char clearSPI;
+        unsigned char switches;
+        unsigned char enable;
+        unsigned int offset; // points to the base of the idle buffer
+        unsigned char audioData; // Connected to AN0
         
         initspi();
         initUART();
+        initTMR2(); //???
 
-        char switches;
-        char enable;
+        // Configure and enable the ADC
+        CloseADC10();   // Ensure the ADC is off before setting
+                        // the configuration
+        SetChanADC(CHANNELCONFIG); //Configure AN0 for input
+
+        // Configure ADC using parameters above
+        OpenADC10(CONFIG1, CONFIG2, CONFIG3, CONFIGPORT, CONFIGSCAN);
+
+
+
    
         // set RD[7:0] to output, RD[11:8] to input
         //   RD[7:0] are LEDs
@@ -186,26 +238,47 @@ int main (void)
             PORTD = (PORTD >> 8) & 0x000F; // Read and mask RD[7:4]
                                         // display on LED
 
-            // switch(Master_State)
-            // {
-            //     case READY_TO_LISTEN:
-            //         // if pushbutton is pressed, then record audio
-            //         if (enable == 1) {
-            //             Master_State = LISTINING
-            //         }
-            //         break;
+            switch(Master_State)
+            {
+                case READY_TO_LISTEN:
+                    // if pushbutton is pressed, then record audio
+                    if (enable == 1) {
+                        Master_State = LISTENING;
+                    }
+                    break;
 
-            //     case LISTENING_SENDING:
+                case LISTENING_SENDING:
+                    EnableADC10(); // Enable the ADC
+                    AcquireADC10(); // Starts manual sample mode
+                   
+                    // Determine which buffer is idle and create an offset
+                    // ReadActiveBufferADC10() = 0 when buffer locations
+                    // 0-7 are being written to ACD module; = 1 when 
+                    // locations 8-F are being written by the ADC module
 
-            //         break;
+                    while(timer3 < 2SEC){ //TODO set a timer to count to 2sec
+                    
+                        offset = 8 * ((~ReadActiveBufferADC10() & 0x01));
 
-            //     case PROCESSING_DATA:
-            //         break;
 
-            //     case COMPLETED_PROCESSING:
-            //         break;
+                        // ReadADC10 returns int. Only want lower 8 bits
+                        // for SPI transmit. ???????
+                        audioData = (ReadADC10(offset) & 0xFF);
+                        clearSPI = spi_send_receive(audioData);
+                    }
 
-            // }
+                    CloseADC10(); //turns off ADC module
+                    Master_State = PROCESSING_DATA;
+
+                    break;
+
+                case PROCESSING_DATA:
+                    break;
+
+                case COMPLETED_PROCESSING:
+                    break;
+
+            }
              
             PORTE = SARAH_FGPA;
             receivedSPI = spi_send_receive(switches);
